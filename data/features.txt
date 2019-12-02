@@ -1,4 +1,12 @@
 feature_pairs
+person_dist
+person_length
+spouse_dist
+spouse_length
+father_dist
+father_length
+mother_dist
+mother_length
 person_name
 spouse_name
 father_name

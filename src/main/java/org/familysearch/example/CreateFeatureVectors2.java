@@ -1,5 +1,7 @@
 package org.familysearch.example;
 
+import org.familysearch.example.name.LevenshteinDistance;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,20 +22,29 @@ public class CreateFeatureVectors2 {
   private static final int NUM_EVAL_LINES = 400;
 
   public static void main(String[] args) throws IOException {
-    new CreateFeatureVectors2().run();
-  }
-
-  public void run() throws IOException {
     List<Integer> dateFields = Utils.intArrayToList(DATE_FIELDS);
-    List<String> lines = Utils.readLines("data/pairs.csv");
+    List<String> lines = Utils.readLines("data/pairs2.psv");
     Files.deleteIfExists(Paths.get(OUTPUT_PATH));
+    final LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
     for (String line : lines) {
       List<String> vectorValues = new ArrayList<>();
-      List<String> fields = new ArrayList<>(Arrays.asList(line.split(",")));
+      List<String> fields = new ArrayList<>(Arrays.asList(line.split("\\|")));
       // Add the match value to the result vector
       vectorValues.add(fields.get(0));
       // Remove the first value that identifies the pair as a match or not
       fields.remove(0);
+      // Add the (naïve) name edit distance and length features.
+      for (int i = 0; i < 4; i++) {
+        final String name = cleanName(fields.get(2 * i));
+        final String otherName = cleanName(fields.get(2 * i + 1));
+        if (name.isEmpty() || otherName.isEmpty()) {
+          vectorValues.add("0");
+        } else {
+          vectorValues.add(String.valueOf(levenshteinDistance.get(name, otherName, true)));
+        }
+        vectorValues.add(String.valueOf(Math.max(name.length(), otherName.length())));
+      }
+      // Generate a feature for each pair of properties.
       for (int i = 0; i < fields.size() - 1; i = i + 2) {
         String targetField = fields.get(i);
         String candidateField = fields.get(i + 1);
@@ -43,38 +54,39 @@ public class CreateFeatureVectors2 {
         else if (i < 9) {
           int sameNames = 0;
           int differentNames = 0;
-          List<String> targetNames = Arrays.asList(targetField.split(" "));
-          List<String> candidateNames = Arrays.asList(candidateField.split(" "));
+//          String[] targetNames = targetField.split(" +");
+//          String[] candidateNames = candidateField.split(" +");
+          String[] targetNames = cleanName(targetField).split(" +");
+          String[] candidateNames = cleanName(candidateField).split(" +");
           for (String targetName : targetNames) {
             for (String candidateName : candidateNames) {
-              if (targetName.equals(candidateName)) {
+              if (targetName.equalsIgnoreCase(candidateName)) {
                 sameNames++;
               }
-//              else {
-//                differentNames--;
-//              }
+              else {
+                differentNames--;
+              }
             }
           }
           vectorValues.add(String.valueOf(sameNames > 0 ? sameNames : differentNames));
         }
-//        else if (dateFields.contains(i)) {
-//          try {
-//            int dateDifference = Math.abs(Integer.parseInt(targetField) - Integer.parseInt(candidateField));
-//            vectorValues.add(String.valueOf(dateDifference < 5 ? 5 - dateDifference : 0));
-//          }
-//          catch (NumberFormatException e) {
-//            vectorValues.add("0");
-//          }
-//        }
+        else if (dateFields.contains(i)) {
+          try {
+            int dateDifference = Math.abs(Integer.parseInt(targetField) - Integer.parseInt(candidateField));
+            vectorValues.add(String.valueOf(dateDifference < 5 ? 5 - dateDifference : 0));
+          }
+          catch (NumberFormatException e) {
+            vectorValues.add("0");
+          }
+        }
         else {
           // Basic logic - check if the values are an exact match
-          if (targetField.equals(candidateField)) {
+          if (targetField.equalsIgnoreCase(candidateField)) {
             vectorValues.add("1");
           }
           else {
             vectorValues.add("0");
           }
-
         }
       }
       Path path = Paths.get(OUTPUT_PATH);
@@ -92,8 +104,11 @@ public class CreateFeatureVectors2 {
     createLibSvmFile();
   }
 
+  private static String cleanName(String name) {
+    return name.replaceAll("[\"().;,]+", " ");
+  }
 
-  private void createLibSvmFile() {
+  private static void createLibSvmFile() {
     int linesCounted = 0;
     List<String> trainLines = new ArrayList<>();
     List<String> evalLines = new ArrayList<>();
@@ -118,7 +133,7 @@ public class CreateFeatureVectors2 {
     writeLibSvmLines(evalLines, LIBSVM_EVAL_FILE);
   }
 
-  private void writeLibSvmLines(List<String> inputFile, String libsvmEvalFile) {
+  private static void writeLibSvmLines(List<String> inputFile, String libsvmEvalFile) {
     Path libSvmEvalFile = Paths.get(libsvmEvalFile);
     try (BufferedWriter writer = Files.newBufferedWriter(libSvmEvalFile)) {
       StringJoiner sj = new StringJoiner(" ");

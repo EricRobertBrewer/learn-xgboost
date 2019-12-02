@@ -17,7 +17,7 @@ public class Train {
 
   public static void main(String[] args) {
     try {
-      new Train().run();
+      run();
     }
     catch (XGBoostError xgBoostError) {
       System.err.println("Unable to train! Error occurred.");
@@ -25,7 +25,7 @@ public class Train {
     }
   }
 
-  public void run() throws XGBoostError {
+  private static void run() throws XGBoostError {
     DMatrix trainMatrix = new DMatrix(LIBSVM_TRAIN_FILE);
     DMatrix evalMatrix = new DMatrix(LIBSVM_EVAL_FILE);
 

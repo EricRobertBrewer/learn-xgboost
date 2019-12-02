@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/opt/anaconda3/bin/python
 
-import sys
 import xgboost as xgb
 import numpy as np
 from sklearn.metrics import accuracy_score
@@ -26,7 +25,7 @@ params = {'n_jobs': 4,
 
 results = {}
 watchlist = [(train, 'train'), (test, 'test')]
-clf = xgb.train(params, train, num_boost_rounds, watchlist, evals_result = results, verbose_eval=100)
+clf = xgb.train(params, train, num_boost_rounds, watchlist, evals_result=results, verbose_eval=100)
 
 print("Calculating predictions")
 predictions = clf.predict(test)

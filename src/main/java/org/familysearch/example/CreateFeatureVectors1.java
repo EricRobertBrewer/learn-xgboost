@@ -19,10 +19,6 @@ public class CreateFeatureVectors1 {
   private static final int NUM_EVAL_LINES = 400;
 
   public static void main(String[] args) throws IOException {
-    new CreateFeatureVectors1().run();
-  }
-
-  public void run() throws IOException {
     List<String> lines = Utils.readLines("data/pairs.csv");
     Files.deleteIfExists(Paths.get(OUTPUT_PATH));
     for (String line : lines) {
@@ -38,7 +34,7 @@ public class CreateFeatureVectors1 {
         if (targetField.isEmpty() || candidateField.isEmpty()) {
           vectorValues.add("0");
         }
-        else if (targetField.equals(candidateField)) {
+        else if (targetField.equalsIgnoreCase(candidateField)) {
           vectorValues.add("1");
         }
         else {
@@ -58,10 +54,9 @@ public class CreateFeatureVectors1 {
       }
     }
     createLibSvmFile();
-
   }
 
-  private void createLibSvmFile() {
+  private static void createLibSvmFile() {
     int linesCounted = 0;
     List<String> trainLines = new ArrayList<>();
     List<String> evalLines = new ArrayList<>();
@@ -86,7 +81,7 @@ public class CreateFeatureVectors1 {
     writeLibSvmLines(evalLines, LIBSVM_EVAL_FILE);
   }
 
-  private void writeLibSvmLines(List<String> inputFile, String libsvmEvalFile) {
+  private static void writeLibSvmLines(List<String> inputFile, String libsvmEvalFile) {
     Path libSvmEvalFile = Paths.get(libsvmEvalFile);
     try (BufferedWriter writer = Files.newBufferedWriter(libSvmEvalFile)) {
       StringJoiner sj = new StringJoiner(" ");

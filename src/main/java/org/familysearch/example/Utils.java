@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Utils {
+public final class Utils {
 
   public static List<String> readLines(String fileName) {
     try {
