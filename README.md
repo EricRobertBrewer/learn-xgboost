@@ -16,6 +16,10 @@ On Windows you can [install Ubuntu from the Microsoft Store](https://www.microso
 
 On other flavors of Linux you will want to install similar package names with your package manager.
 
+This repository is set up as a [Maven](https://maven.apache.org/) project. All Java files can be run through IntelliJ or a similar IDE by creating a new project using the included pom.xml file. For users without an IDE that supports Maven, the Maven command line tool can be used to build a jar file through which the Java code can be run. The following Maven command will generate the jar file in the `target` directory:
+
+     mvn clean install
+
 #### Training a model with Python
 To train a classifier and test that you have installed the main dependencies you can run:
 
@@ -23,7 +27,7 @@ To train a classifier and test that you have installed the main dependencies you
 
 #### Labeled data
 
-There are 2660 pairs in csv format in the data directory: 1193 negative "not a match" examples (start with "0"), and 1467 positive "matching" examples (start with "1").  Alternating data fields are given after the good (1) or bad (0) label and include person name, spouse name, father name, mother name, child name, person birth detail (year, month, day, country, county, city, location), spouse birth detail (7 fields), child birth detail (7 fields), census detail (year, month, day, country, county, city, location), and death detail (year, month, day, country, county, city, location).  The last field is a reference id.
+There are 2660 pairs in csv format in the data directory: 1193 negative "not a match" examples (start with "0"), and 1467 positive "matching" examples (start with "1").  Alternating data fields are given after the good (1) or bad (0) label and include person name, spouse name, father name, mother name, child name, person birth detail (year, month, day, country, state, county, city), spouse birth detail (7 fields), child birth detail (7 fields), census detail (year, month, day, country, state, county, city), and death detail (year, month, day, country, state, county, city).  The last field is a reference id.
 
 We will compare each piece of data after the first field (the label), and generate a feature vector for each row.  Those feature vectors are then separated into a training (85%) and a test (15%) set.  Here is a sample row to consider:
 
